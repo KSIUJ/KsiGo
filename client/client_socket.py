@@ -7,27 +7,28 @@ class Client:
         self.user_name = ""
         self.connection.connect((host, port))
 
+    def send_message(self, message):
+        parsed_message = '{:04}'.format(len(message)) + message
+        self.connection.sendall(bytes(parsed_message, 'utf-8'))
+
     def set_username(self, name):
         self.user_name = name
-        self.connection.sendall(bytes(name, 'utf-8'))
+        self.send_message(name)
         print(self.connection.recv(1024).decode())
-
-    def send_move(self, move):
-        self.connection.sendall(bytes(move, 'utf-8'))
 
     def game(self):
         is_game = True
         while is_game:
-            is_game = self.connection.recv(1024).decode()
+            is_game = self.connection.recv(1).decode()
 
             if is_game:
                 move = input("Make a move: ")
-                self.send_move(move)
+                self.send_message(move)
 
 
 # function creates a player and connects him to server
 # remember that you have to create two clients to start a game
-def create_player(name):
-    player = Client('localhost', 9998)
+def create_player(name, address="localhost", port=9999):
+    player = Client(address, port)
     player.set_username(name)
     player.game()

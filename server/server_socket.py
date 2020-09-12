@@ -8,17 +8,26 @@ class Server:
         print("Socket created")
         self.clients = []
 
+    def receive_message(self, player):
+        message_len = int(self.clients[player].recv(4).decode())
+        message = ""
+
+        while len(message) < message_len:
+            message += self.clients[player].recv(1024).decode()
+
+        return message
+
     def connection(self) -> bool:
         self.server_conn.listen(2)  # buffer for two connections
         print("Waiting for connections...")
 
         while len(self.clients) < 2:
             client, addr = self.server_conn.accept()
-            username = client.recv(1024).decode()
+            self.clients.append(client)
+            username = self.receive_message(len(self.clients) - 1)
 
             print("Connected with ", username, " on address ", addr)
             client.send(bytes("Welcome to ksiGo", 'utf-8'))
-            self.clients.append(client)
 
         return True
 
@@ -33,7 +42,7 @@ class Server:
         player = 0
         while is_game:
             self.clients[player].send(bytes(True))
-            moves.append(self.clients[player].recv(1024).decode())
+            moves.append(self.receive_message(player))
             print(f'Player {player} made a move: {moves[-1]}')
 
             player += 1
@@ -45,8 +54,8 @@ class Server:
 
 
 # function creates a server connection for two players
-def create_server():
-    new_server = Server('localhost', 9998)
+def create_server(address="localhost", port=9999):
+    new_server = Server(address, port)
     new_server.connection()
     new_server.game()
     new_server.close_game()
