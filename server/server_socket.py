@@ -2,9 +2,9 @@ import socket
 
 
 class Server:
-    def __init__(self):
+    def __init__(self, host, port):
         self.server_conn = socket.socket()  # default values: ipv4, tcp
-        self.server_conn.bind(('localhost', 9999))
+        self.server_conn.bind((host, port))
         print("Socket created")
         self.clients = []
 
@@ -34,6 +34,7 @@ class Server:
         while is_game:
             self.clients[player].send(bytes(True))
             moves.append(self.clients[player].recv(1024).decode())
+            print(f'Player {player} made a move: {moves[-1]}')
 
             player += 1
             player = player % 2
@@ -45,7 +46,7 @@ class Server:
 
 # function creates a server connection for two players
 def create_server():
-    new_server = Server()
+    new_server = Server('localhost', 9998)
     new_server.connection()
     new_server.game()
     new_server.close_game()
