@@ -3,7 +3,6 @@ import pickle
 
 class Message:
     def __init__(self, func, args: tuple):
-        super().__init__()
         self.func = func
         self.args = args
 
