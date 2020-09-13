@@ -15,7 +15,7 @@ class Parser:
         return string
 
     @classmethod
-    def extract_args(cls, types, arg_string: str):
+    def extract_args(cls, types: tuple, arg_string: str) -> list:
         ret_tuple = list()
         arg_string = cls.remove_parenthesis(arg_string)
         for type_ in types:
