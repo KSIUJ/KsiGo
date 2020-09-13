@@ -5,14 +5,19 @@ class Parser:
     def execute(cls, command: str):
         (pref, _, suff) = command.partition(cls.separator)
         cls.binds[pref](suff)
+
+    @staticmethod
+    def remove_parenthesis(string: str) -> str:
+        if string.startswith("("):
+            string = string.lstrip("(")
+        if string.endswith(")"):
+            string = string.rstrip(")")
+        return string
+
     @classmethod
-    def extract_args(cls, types, arg_strings: str):
+    def extract_args(cls, types, arg_string: str):
         ret_tuple = list()
-        arg_string = arg_strings
-        if arg_string.startswith("("):
-            arg_string = arg_string.lstrip("(")
-        if arg_string.endswith(")"):
-            arg_string = arg_string.rstrip(")")
+        arg_string = cls.remove_parenthesis(arg_string)
         for type_ in types:
             (arg, _, arg_string) = arg_string.partition(",")
             arg = arg.strip()
