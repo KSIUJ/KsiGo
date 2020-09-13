@@ -1,7 +1,3 @@
-def place(args: str):
-    [x, y] = Parser.extract_args((int, int), args)
-    print(f"This command places a stone on a board at coordinates ({x}, {y})")
-
 class Parser:
     separator = ""
     binds = {}
@@ -24,14 +20,16 @@ class Parser:
             ret_tuple.append(type_(arg))
         return ret_tuple
 
+class GameParserHelper:
+    @classmethod
+    def place(cls, args: str):
+        [x, y] = Parser.extract_args((int, int), args)
+        print(f"This command places a stone on a board at coordinates ({x}, {y})")
+
 class GameParser(Parser):
     separator = "("
-    # @classmethod
-    # def place(cls, args: str):
-    #     (x, y) = Parser.extract_args((int, int), args)
-    #     print(f"This command places a stone on a board at coordinates ({x}, {y})")
     binds = {
-        "place": place
+        "place": GameParserHelper.place
     }
 
 class MainParser(Parser):
