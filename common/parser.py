@@ -36,6 +36,10 @@ class GameParser(Parser):
     binds = {
         "place": GameParserHelper.place
     }
+    @classmethod
+    def place(cls, x: int,y: int) -> str:
+        return "game.place({x}, {y})"
+
 
 class MainParser(Parser):
     separator = "."
