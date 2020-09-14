@@ -7,34 +7,35 @@ class EventType(Enum):
     MOVE = 1
 
 
-def get_event() -> (EventType, str):
+def get_event() -> (EventType, tuple):
     msg = "Make a move or type 'exit' to quit.\n" \
-          "Move should look like this: 'x,y', where x and y are integers in range <1,15>\n"
+          "Move should look like this: 'x,y', where x and y are integers in range <1,19>\n"
 
     while True:
-        text = input(msg)
-        if text == "exit":
+        _input = input(msg)
+        if _input == "exit":
             event = EventType.EXIT
             break
-        elif is_move_formatted_right(text):
+        elif is_move_formatted_right(_input):
             event = EventType.MOVE
+            (x, _, y) = _input.partition(",")
+            _input = (int(x), int(y))
             break
         else:
             print("Try again\n")
 
-    return event, text
+    return event, _input
 
 
 def is_move_formatted_right(move: str):
     match = False
     if re.match("^[1-9][,][1-9]$", move):
         match = True
-    elif re.match("^[1-9][,][1][0-5]$", move):
+    elif re.match("^[1-9][,][1][0-9]$", move):
         match = True
-    elif re.match("^[1][0-5][,][1-9]$", move):
+    elif re.match("^[1][0-9][,][1-9]$", move):
         match = True
-    elif re.match("^[1][0-5][,][1][0-5]$", move):
+    elif re.match("^[1][0-9][,][1][0-9]$", move):
         match = True
 
     return match
-
