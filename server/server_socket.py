@@ -1,4 +1,5 @@
 import socket
+from common import socket_utils as util
 
 
 class Server:
@@ -8,15 +9,6 @@ class Server:
         print("Socket created")
         self.clients = []
 
-    def receive_message(self, player):
-        message_len = int(self.clients[player].recv(4).decode())
-        message = ""
-
-        while len(message) < message_len:
-            message += self.clients[player].recv(1024).decode()
-
-        return message
-
     def connection(self) -> bool:
         self.server_conn.listen(2)  # buffer for two connections
         print("Waiting for connections...")
@@ -24,10 +16,9 @@ class Server:
         while len(self.clients) < 2:
             client, addr = self.server_conn.accept()
             self.clients.append(client)
-            username = self.receive_message(len(self.clients) - 1)
+            username = util.receive_message(self.clients[-1])
 
             print("Connected with ", username, " on address ", addr)
-            client.send(bytes("Welcome to ksiGo", 'utf-8'))
 
         return True
 
@@ -41,8 +32,10 @@ class Server:
         is_game = True
         player = 0
         while is_game:
-            self.clients[player].send(bytes(True))
-            moves.append(self.receive_message(player))
+            curr_player = self.clients[player]
+
+            curr_player.send(bytes(True))
+            moves.append(util.receive_message(curr_player))
             print(f'Player {player} made a move: {moves[-1]}')
 
             player += 1

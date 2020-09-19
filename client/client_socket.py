@@ -1,34 +1,32 @@
 import socket
+from common import socket_utils as util
 
 
 class Client:
-    def __init__(self, host, port):
-        self.connection = socket.socket()  # default values: ipv4, tcp
-        self.user_name = ""
-        self.connection.connect((host, port))
-
-    def send_message(self, message):
-        parsed_message = '{:04}'.format(len(message)) + message
-        self.connection.sendall(bytes(parsed_message, 'utf-8'))
-
-    def set_username(self, name):
+    def __init__(self, name, host, port):
+        self.client_conn = socket.socket()  # default values: ipv4, tcp
         self.user_name = name
-        self.send_message(name)
-        print(self.connection.recv(1024).decode())
+        self.client_conn.connect((host, port))
+        self.send_username()
+
+    def send_username(self):
+        util.send_message(self.client_conn, self.user_name)
 
     def game(self):
         is_game = True
         while is_game:
-            is_game = self.connection.recv(1).decode()
+            is_game = self.client_conn.recv(1).decode()
 
             if is_game:
                 move = input("Make a move: ")
-                self.send_message(move)
+                util.send_message(self.client_conn, move)
 
 
 # function creates a player and connects him to server
 # remember that you have to create two clients to start a game
 def create_player(name, address="localhost", port=9999):
-    player = Client(address, port)
-    player.set_username(name)
+    player = Client(name, address, port)
     player.game()
+
+
+create_player("adi", port=9997)
