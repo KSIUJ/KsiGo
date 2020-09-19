@@ -27,6 +27,3 @@ class Client:
 def create_player(name, address="localhost", port=9999):
     player = Client(name, address, port)
     player.game()
-
-
-create_player("adi", port=9997)
