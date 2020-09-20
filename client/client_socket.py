@@ -7,9 +7,6 @@ class Client:
         self.client_conn = socket.socket()  # default values: ipv4, tcp
         self.user_name = name
         self.client_conn.connect((host, port))
-        self.send_username()
-
-    def send_username(self):
         util.send_message(self.client_conn, self.user_name)
 
     def game(self):
