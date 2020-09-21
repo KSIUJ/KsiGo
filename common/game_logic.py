@@ -13,15 +13,43 @@ class Player(object):
         return self.points
 
 
+class Rules:
+    # TODO
+    def get_type(self):
+        pass
+
+
+class ChineseRules:
+    # TODO
+    @staticmethod
+    def get_type() -> str:
+        return 'Chinese'
+
+
+class JapaneseRules:
+    # TODO
+    @staticmethod
+    def get_type() -> str:
+        return 'Japanese'
+
+
 class Board(object):
-    def __init__(self, player_black, player_white):
+    def __init__(self, player_black, player_white, size=19, rules: Rules = None):
         self.player_black = player_black
         self.player_white = player_white
         self.actual_turn = "black"
-        self.size = 19
-        self.Matrix = [['*' for x in range(self.size)] for y in range(self.size)]
+        self.size = size
+
+        self.rules = rules
+        if self.rules is None:
+            self.rules = ChineseRules
+
+        self.Matrix = [['*' for _ in range(self.size)] for _ in range(self.size)]
         self.groups = []
         self.passed_turn = 0
+
+        self.ko_captive = (-1, -1)
+        self.ko_beating = (-1, -1)
 
     def print_board(self):
 
@@ -72,6 +100,86 @@ class Board(object):
         if added_stone:
             added_stone.group.update_liberties(end_of_game_fix=end_of_game_fix)
 
+    def move_is_legal(self, row, col):
+        if (row, col) == self.ko_captive:
+            stone = self.search(point=self.ko_beating)
+            lib = len(stone.group.liberties)
+            abund = stone.group.abundance
+            if abund == 1 and lib == 1:
+                return False
+
+        color = ""
+        if self.actual_turn == "white":
+            color = "w"
+        elif self.actual_turn == "black":
+            color = "b"
+
+        if row > 0:
+            if self.Matrix[row-1][col] == "*":
+                return True
+            elif self.Matrix[row-1][col] != color:
+                stone = self.search(point=(row-1, col))
+                lib = len(stone.group.liberties)
+                if lib == 1:
+                    if stone.group.abundance == 1:
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row-1, col)
+                    return True
+            elif self.Matrix[row-1][col] == color:
+                stone = self.search(point=(row-1, col))
+                lib = len(stone.group.liberties)
+                if lib > 1:
+                    return True
+        if row < self.size - 1:
+            if self.Matrix[row+1][col] == "*":
+                return True
+            elif self.Matrix[row+1][col] != color:
+                stone = self.search(point=(row+1, col))
+                lib = len(stone.group.liberties)
+                if lib == 1:
+                    if stone.group.abundance == 1:
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row+1, col)
+                    return True
+            elif self.Matrix[row+1][col] == color:
+                stone = self.search(point=(row+1, col))
+                lib = len(stone.group.liberties)
+                if lib > 1:
+                    return True
+        if col > 0:
+            if self.Matrix[row][col-1] == "*":
+                return True
+            elif self.Matrix[row][col-1] != color:
+                stone = self.search(point=(row, col-1))
+                lib = len(stone.group.liberties)
+                if lib == 1:
+                    if stone.group.abundance == 1:
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row, col-1)
+                    return True
+            elif self.Matrix[row][col-1] == color:
+                stone = self.search(point=(row, col-1))
+                lib = len(stone.group.liberties)
+                if lib > 1:
+                    return True
+        if col < self.size - 1:
+            if self.Matrix[row][col+1] == "*":
+                return True
+            elif self.Matrix[row][col + 1] != color:
+                stone = self.search(point=(row, col + 1))
+                lib = len(stone.group.liberties)
+                if lib == 1:
+                    if stone.group.abundance == 1:
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row, col+1)
+                    return True
+            elif self.Matrix[row][col + 1] == color:
+                stone = self.search(point=(row, col + 1))
+                lib = len(stone.group.liberties)
+                if lib > 1:
+                    return True
+        return False
+
     def count_points(self):
         for k in range(self.size):
             for l in range(self.size):
@@ -95,21 +203,34 @@ class Board(object):
 
             print("The current situation on the board")
             self.print_board()
-            print(f"Now is {self.actual_turn}'s turn")
-            print(f"PASS or Col:", end=" ")
-            col = input()
-            if col == "PASS":
-                self.passed_turn += 1
-            else:
-                self.passed_turn = 0
-                col = ord(col) - 65
-                print(f"Row:", end=" ")
-                row = input()
-                row = ord(row) - 97
+            while True:
+                print(f"Now is {self.actual_turn}'s turn")
+                print(f"PASS or Col:", end=" ")
+                col = input()
+                if col == "PASS":
+                    self.passed_turn += 1
+                    self.ko_beating = (-1, -1)
+                    self.ko_captive = (-1, -1)
+                    break
+                else:
+                    col = ord(col) - 65
+                    print(f"Row:", end=" ")
+                    row = input()
+                    row = ord(row) - 97
+                    if self.move_is_legal(row=row, col=col):
+                        self.passed_turn = 0
+                        added_stone = Stone(board=self, point=(row, col), color=self.actual_turn)
+                        self.update_liberties(added_stone=added_stone)
+                        self.update_board(x=row, y=col, color=self.actual_turn)
+                        if (row, col) != self.ko_beating:
+                            self.ko_beating = (-1, -1)
+                            self.ko_captive = (-1, -1)
+                        break
 
-                added_stone = Stone(board=self, point=(row, col), color=self.actual_turn)
-                self.update_liberties(added_stone=added_stone)
-                self.update_board(x=row, y=col, color=self.actual_turn)
+                    else:
+                        print("")
+                        print("Wait, that's illegal")
+                        print("Choose other Row and Col")
 
             self.next_turn()
 
@@ -141,20 +262,13 @@ class Stone(object):
 
         if self.point[0] > 0:
             neighboring.append((self.point[0] - 1, self.point[1]))
-        if self.point[0] < 18:
+        if self.point[0] < self.board.size - 1:
             neighboring.append((self.point[0] + 1, self.point[1]))
         if self.point[1] > 0:
             neighboring.append((self.point[0], self.point[1] - 1))
-        if self.point[1] < 18:
+        if self.point[1] < self.board.size - 1:
             neighboring.append((self.point[0], self.point[1] + 1))
 
-        # neighboring = [(self.point[0] - 1, self.point[1]),
-        #                (self.point[0] + 1, self.point[1]),
-        #                (self.point[0], self.point[1] - 1),
-        #                (self.point[0], self.point[1] + 1)]
-        # for point in neighboring:
-        #     if not 0 <= point[0] < 19 or not 0 <= point[1] < 19:
-        #         neighboring.remove(point)
         return neighboring
 
     @property
@@ -190,11 +304,13 @@ class Group(object):
         self.board.groups.append(self)
         self.stones = [stone]
         self.liberties = None
+        self.abundance = 0
 
     def merge(self, group):
 
         for stone in group.stones:
             stone.group = self
+            self.abundance += 1
             self.stones.append(stone)
         self.board.groups.remove(group)
         del group
@@ -218,6 +334,7 @@ class Group(object):
             for liberty in stone.liberties:
                 liberties.append(liberty)
         self.liberties = set(liberties)
+        self.abundance = count
         if len(self.liberties) == 0 and col == "none":
             occupant_color = "*"
             only_one_occupant = True
@@ -226,14 +343,14 @@ class Group(object):
                 if occupant_color == "*":
                     if stone.point[0] > 0:
                         occupant_color = self.board.Matrix[stone.point[0] - 1][stone.point[1]]
-                    if stone.point[0] < 18:
+                    if stone.point[0] < self.board.size - 1:
                         tmp = self.board.Matrix[stone.point[0] + 1][stone.point[1]]
                         if occupant_color != "*" and tmp != "*" and occupant_color != tmp:
                             only_one_occupant = False
                             break
                         elif tmp != "*" and occupant_color == "*":
                             occupant_color = tmp
-                    if stone.point[1] < 18:
+                    if stone.point[1] < self.board.size - 1:
                         tmp = self.board.Matrix[stone.point[0]][stone.point[1] + 1]
                         if occupant_color != "*" and tmp != "*" and occupant_color != tmp:
                             only_one_occupant = False
@@ -254,12 +371,12 @@ class Group(object):
                         if neighbor_color != "*" and neighbor_color != occupant_color:
                             only_one_occupant = False
                             break
-                    if stone.point[0] < 18:
+                    if stone.point[0] < self.board.size - 1:
                         neighbor_color = self.board.Matrix[stone.point[0] + 1][stone.point[1]]
                         if neighbor_color != "*" and neighbor_color != occupant_color:
                             only_one_occupant = False
                             break
-                    if stone.point[1] < 18:
+                    if stone.point[1] < self.board.size - 1:
                         neighbor_color = self.board.Matrix[stone.point[0]][stone.point[1] + 1]
                         if neighbor_color != "*" and neighbor_color != occupant_color:
                             only_one_occupant = False
@@ -285,6 +402,6 @@ class Group(object):
 
 if __name__ == '__main__':
     czarny = Player(color="black")
-    bialy = Player(color="white", komi=5.5)
-    theBoard = Board(player_black=czarny, player_white=bialy)
+    bialy = Player(color="white", komi=6.5)
+    theBoard = Board(player_black=czarny, player_white=bialy, size=9)
     theBoard.lets_play()
