@@ -1,7 +1,7 @@
 import abc
 
 
-class IClientScket(metaclass=abc.ABCMeta):
+class IClientSocket(metaclass=abc.ABCMeta):
     #  Client side of socket communication
 
     @abc.abstractmethod
