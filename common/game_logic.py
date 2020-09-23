@@ -1,48 +1,12 @@
 import string
 
 
-class Player(object):
-    def __init__(self, color, komi=0.0):
-        self.color = color
-        self.points = komi
-
-    def add_points(self, new_points):
-        self.points += new_points
-
-    def return_points(self):
-        return self.points
-
-
-class Rules:
-    # TODO
-    def get_type(self):
-        pass
-
-
-class ChineseRules:
-    # TODO
-    @staticmethod
-    def get_type() -> str:
-        return 'Chinese'
-
-
-class JapaneseRules:
-    # TODO
-    @staticmethod
-    def get_type() -> str:
-        return 'Japanese'
-
-
 class Board(object):
-    def __init__(self, player_black, player_white, size=19, rules: Rules = None):
-        self.player_black = player_black
-        self.player_white = player_white
+    def __init__(self, size=19):
+        self.player_black_points = 0.0
+        self.player_white_points = 7.5
         self.actual_turn = "black"
         self.size = size
-
-        self.rules = rules
-        if self.rules is None:
-            self.rules = ChineseRules
 
         self.Matrix = [['*' for _ in range(self.size)] for _ in range(self.size)]
         self.groups = []
@@ -101,6 +65,9 @@ class Board(object):
             added_stone.group.update_liberties(end_of_game_fix=end_of_game_fix)
 
     def move_is_legal(self, row, col):
+        if self.Matrix[row][col] != "*":
+            return False
+
         if (row, col) == self.ko_captive:
             stone = self.search(point=self.ko_beating)
             lib = len(stone.group.liberties)
@@ -188,10 +155,10 @@ class Board(object):
                     added_stone = Stone(board=self, point=(k, l), color="none")
                     self.update_liberties(added_stone=added_stone, end_of_game_fix=True)
 
-        if self.player_white.points > self.player_black.points:
-            print(f"white won by {self.player_white.points - self.player_black.points}")
-        elif self.player_white.points < self.player_black.points:
-            print(f"black won by {self.player_black.points - self.player_white.points}")
+        if self.player_white_points > self.player_black_points:
+            print(f"white won by {self.player_white_points - self.player_black_points}")
+        elif self.player_white_points < self.player_black_points:
+            print(f"black won by {self.player_black_points - self.player_white_points}")
         else:
             print("its draw")
 
@@ -388,20 +355,19 @@ class Group(object):
                             break
             if only_one_occupant:
                 if occupant_color == "b":
-                    self.board.player_black.add_points(new_points=count)
+                    self.board.player_black_points += count
                 elif occupant_color == "w":
-                    self.board.player_white.add_points(new_points=count)
+                    self.board.player_white_points += count
             self.remove()
         elif len(self.liberties) == 0 and not end_of_game_fix:
             if col == "black":
-                self.board.player_white.add_points(new_points=count)
+                self.board.player_white_points += count
             elif col == "white":
-                self.board.player_black.add_points(new_points=count)
+                self.board.player_black_points += count
             self.remove()
 
 
 if __name__ == '__main__':
-    czarny = Player(color="black")
-    bialy = Player(color="white", komi=6.5)
-    theBoard = Board(player_black=czarny, player_white=bialy, size=9)
+
+    theBoard = Board(size=9)
     theBoard.lets_play()
