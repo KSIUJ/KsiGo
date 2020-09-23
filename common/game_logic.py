@@ -35,6 +35,13 @@ class Board(object):
         else:
             self.actual_turn = "black"
 
+    def turn_is_passed(self, is_passed):
+        if is_passed:
+            self.next_turn()
+            self.passed_turn += 1
+        else:
+            self.passed_turn = 0
+
     def update_board(self, x, y, color="*"):
         if color == "black":
             self.Matrix[x][y] = "b"
@@ -175,7 +182,7 @@ class Board(object):
                 print(f"PASS or Col:", end=" ")
                 col = input()
                 if col == "PASS":
-                    self.passed_turn += 1
+                    self.turn_is_passed(True)
                     self.ko_beating = (-1, -1)
                     self.ko_captive = (-1, -1)
                     break
@@ -185,7 +192,7 @@ class Board(object):
                     row = input()
                     row = ord(row) - 97
                     if self.move_is_legal(row=row, col=col):
-                        self.passed_turn = 0
+                        self.turn_is_passed(False)
                         added_stone = Stone(board=self, point=(row, col), color=self.actual_turn)
                         self.update_liberties(added_stone=added_stone)
                         self.update_board(x=row, y=col, color=self.actual_turn)
