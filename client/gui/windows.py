@@ -1,31 +1,37 @@
-import sys
 import OpenGL.GL as gl
 from math import fabs
-from PySide2.QtWidgets import QApplication, QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout
+
+import PySide2
+from PySide2.QtWidgets import QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout
 from PySide2.QtGui import QMouseEvent
-from gui.ui_main_window import Ui_MainWindow
-from gui.ui_game_window import Ui_GameWindow
+from client.gui.ui_main_window import Ui_MainWindow
+from client.gui.ui_game_window import Ui_GameWindow
+from client.interfaces.client import IClient
+from common.game_logic import *
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, events: IClient):
         super().__init__()
+
+        self.events = events
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("Ksi Go")
 
         self.ui.start_button.clicked.connect(self.start)
         self.ui.connect_button.clicked.connect(self.check_username)
-        self.ui.x9_button.clicked.connect(self.play_9)
-        self.ui.x13_button.clicked.connect(self.play_13)
-        self.ui.x19_button.clicked.connect(self.play_19)
+        self.ui.x9_button.clicked.connect(lambda: self.play(9))
+        self.ui.x13_button.clicked.connect(lambda: self.play(13))
+        self.ui.x19_button.clicked.connect(lambda: self.play(19))
 
         self.ui.stackedWidget.setCurrentWidget(self.ui.welcome_screen)
 
         self.show()
 
     def start(self):
-        self.ui.stackedWidget.setCurrentWidget(self.ui.username_screen)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.board_size_screen)
 
     def check_username(self):
         username = self.ui.username_input.toPlainText()
@@ -39,28 +45,29 @@ class MainWindow(QMainWindow):
             box.setIcon(QMessageBox.Warning)
             box.exec()
 
-    def play_9(self):
-        self.game = GameWindow(9)
+    def play(self, size):
+        self.game = GameWindow(size, self.events)
         self.game.show()
         self.close()
 
-    def play_13(self):
-        self.game = GameWindow(13)
-        self.game.show()
-        self.close()
+    def pass_(self):
+        if self.events.on_pass_clicked():
+            pass
+            # window
 
-    def play_19(self):
-        self.game = GameWindow(19)
-        self.game.show()
-        self.close()
+    def resign(self):
+        # window
+        print('lost')
 
 
 class GlWidget(QOpenGLWidget):
 
-    def __init__(self, size):
+    def __init__(self, size, events: IClient):
         super().__init__()
+        self.my_turn = False
         self.size = size
-        self.board = [['*' for _ in range(size)] for _ in range(size)]
+        self.events = events
+        self.board = Board(size)
 
     def initializeGL(self):
         super().initializeGL()
@@ -90,22 +97,30 @@ class GlWidget(QOpenGLWidget):
             gl.glVertex2f(0.95, -0.95 + index)
             gl.glEnd()
 
+        if self.size == 19:
+            point_size = 0.05
+        elif self.size == 13:
+            point_size = 0.07
+        else:
+            point_size = 0.1
+
+        gl.glPointSize(min(self.width(), self.height()) * point_size)
+
+        for i in range(self.size):
             gl.glEnable(gl.GL_POINT_SMOOTH)
             for j in range(self.size):
-                if self.board[i][j] == 'b':
-                    gl.glColor3f(1, 1, 1)
-                    gl.glPointSize(30)
+                if self.board.Matrix[i][j] == 'b':
+                    gl.glColor3f(0, 0, 0)
 
                     gl.glBegin(gl.GL_POINTS)
-                    gl.glVertex2f(-0.95+(j*step), 0.95-(i*step))
+                    gl.glVertex2f(-0.95 + (j * step), 0.95 - (i * step))
                     gl.glEnd()
 
-                elif self.board[i][j] == 'c':
-                    gl.glColor3f(0, 0, 0)
-                    gl.glPointSize(30)
+                elif self.board.Matrix[i][j] == 'w':
+                    gl.glColor3f(1, 1, 1)
 
                     gl.glBegin(gl.GL_POINTS)
-                    gl.glVertex2f(-0.95+(j*step), 0.95-(i*step))
+                    gl.glVertex2f(-0.95 + (j * step), 0.95 - (i * step))
                     gl.glEnd()
 
     def mousePressEvent(self, event: QMouseEvent):
@@ -131,27 +146,39 @@ class GlWidget(QOpenGLWidget):
                 index_y = index
             diff = y - i
 
-        self.board[index_y][index_x] = 'b'
+        if self.board.move_is_legal(index_y, index_x):
+            added_stone = Stone(board=self.board, point=(index_y, index_x), color=self.board.actual_turn)
+            self.board.update_liberties(added_stone=added_stone)
+            self.board.update_board(x=index_y, y=index_x, color=self.board.actual_turn)
+
+            if (index_y, index_x) != self.board.ko_beating:
+                self.board.ko_beating = (-1, -1)
+                self.board.ko_captive = (-1, -1)
+
+            self.board.next_turn()
+        else:
+            print('error')
+
         self.update()
 
 
 class GameWindow(QMainWindow):
-    def __init__(self, size):
+    def __init__(self, size, events: IClient):
         super().__init__()
+
+        self.size = size
+        self.events = events
 
         self.ui = Ui_GameWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("Ksi Go")
 
         layout = QVBoxLayout()
-        widget = GlWidget(size)
+        widget = GlWidget(size, events)
         layout.addWidget(widget)
         self.ui.opengl_container.setLayout(layout)
 
         self.show()
 
-
-def start():
-    app = QApplication()
-    window = MainWindow()
-    sys.exit(app.exec_())
+    def closeEvent(self, event: PySide2.QtGui.QCloseEvent):
+        super().closeEvent(event)
