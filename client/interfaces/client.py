@@ -17,3 +17,7 @@ class IClient(ABC):
     @abstractmethod
     def on_pawn_put(self):
         pass
+
+    @abstractmethod
+    def open(self):
+        pass

@@ -27,9 +27,12 @@ class Client(IClient):
     def on_resign_confirmed(self):
         self.app.exit(0)
 
+    def open(self):
+        window = MainWindow(self)
+
     def start(self):
         self.app = QApplication()
-        window = MainWindow(self)
+        self.open()
         sys.exit(self.app.exec_())
 
 
