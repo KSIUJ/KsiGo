@@ -19,5 +19,5 @@ class IClient(ABC):
         pass
 
     @abstractmethod
-    def open(self):
+    def open(self, stacked_page=0):
         pass

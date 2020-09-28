@@ -27,8 +27,9 @@ class Client(IClient):
     def on_resign_confirmed(self):
         self.app.exit(0)
 
-    def open(self):
+    def open(self, stacked_page=0):
         window = MainWindow(self)
+        window.ui.stackedWidget.setCurrentIndex(stacked_page)
 
     def start(self):
         self.app = QApplication()

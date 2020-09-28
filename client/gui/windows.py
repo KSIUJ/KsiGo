@@ -151,7 +151,11 @@ class GlWidget(QOpenGLWidget):
             self.board.next_turn()
             self.events.on_pawn_put()
         else:
-            print('error')
+            box = QMessageBox()
+            box.setWindowTitle("Error")
+            box.setText("Invalid move.")
+            box.setIcon(QMessageBox.Warning)
+            box.exec()
 
         self.update()
 
@@ -194,8 +198,18 @@ class GameWindow(QMainWindow):
         self.gl_widget.board.next_turn()
 
     def resign(self):
-        # window
-        print('lost')
+        box = QMessageBox()
+        box.setText("Are you sure? You won't be able to undo it.")
+        box.setWindowTitle("Resign")
+        box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+        box.setIcon(QMessageBox.Warning)
+        box.setButtonText(QMessageBox.Ok, "Resign")
+
+        button = box.exec()
+
+        if button == QMessageBox.Ok:
+            self.close()
+            self.events.open()
 
 
 class EndGameDialog(QDialog):
@@ -215,7 +229,7 @@ class EndGameDialog(QDialog):
     def play_again(self):
         self.game_window.close()
         self.close()
-        self.events.open()
+        self.events.open(2)
 
     def closeEvent(self, arg__1: PySide2.QtGui.QCloseEvent):
         super().closeEvent(arg__1)
