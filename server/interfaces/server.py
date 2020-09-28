@@ -5,7 +5,7 @@ class IServer(metaclass=abc.ABCMeta):
     # Ṃain server class
 
     @abc.abstractmethod
-    def make_a_connections(self, connection):
+    def make_connections(self, connection):
         pass
 
     @abc.abstractmethod
