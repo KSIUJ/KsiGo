@@ -162,14 +162,7 @@ class Board(object):
                     added_stone = Stone(board=self, point=(k, l), color="none")
                     self.update_liberties(added_stone=added_stone, end_of_game_fix=True)
 
-        if self.player_white_points > self.player_black_points:
-            print(f"white won by {self.player_white_points - self.player_black_points}")
-        elif self.player_white_points < self.player_black_points:
-            print(f"black won by {self.player_black_points - self.player_white_points}")
-        else:
-            print("its draw")
-
-        # print(f"w {self.player_white.points},b {self.player_black.points}")
+        return self.player_black_points, self.player_white_points
 
     def lets_play(self):
 
@@ -371,10 +364,5 @@ class Group(object):
                 self.board.player_white_points += count
             elif col == "white":
                 self.board.player_black_points += count
+                
             self.remove()
-
-
-if __name__ == '__main__':
-
-    theBoard = Board(size=9)
-    theBoard.lets_play()
