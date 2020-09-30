@@ -35,13 +35,6 @@ class Board(object):
         else:
             self.actual_turn = "black"
 
-    def turn_is_passed(self, is_passed):
-        if is_passed:
-            self.next_turn()
-            self.passed_turn += 1
-        else:
-            self.passed_turn = 0
-
     def update_board(self, x, y, color="*"):
         if color == "black":
             self.Matrix[x][y] = "b"
@@ -96,9 +89,12 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        self.ko_beating = (row, col)
-                        self.ko_captive = (row-1, col)
-                    return True
+                        if stone.blanc_neigh_fix():
+                            self.ko_beating = (row, col)
+                            self.ko_captive = (row-1, col)
+                            return True
+                    else:
+                        return True
             elif self.Matrix[row-1][col] == color:
                 stone = self.search(point=(row-1, col))
                 lib = len(stone.group.liberties)
@@ -112,9 +108,12 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        self.ko_beating = (row, col)
-                        self.ko_captive = (row+1, col)
-                    return True
+                        if stone.blanc_neigh_fix():
+                            self.ko_beating = (row, col)
+                            self.ko_captive = (row + 1, col)
+                            return True
+                    else:
+                        return True
             elif self.Matrix[row+1][col] == color:
                 stone = self.search(point=(row+1, col))
                 lib = len(stone.group.liberties)
@@ -128,9 +127,12 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        self.ko_beating = (row, col)
-                        self.ko_captive = (row, col-1)
-                    return True
+                        if stone.blanc_neigh_fix():
+                            self.ko_beating = (row, col)
+                            self.ko_captive = (row, col - 1)
+                            return True
+                    else:
+                        return True
             elif self.Matrix[row][col-1] == color:
                 stone = self.search(point=(row, col-1))
                 lib = len(stone.group.liberties)
@@ -144,9 +146,12 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        self.ko_beating = (row, col)
-                        self.ko_captive = (row, col+1)
-                    return True
+                        if stone.blanc_neigh_fix():
+                            self.ko_beating = (row, col)
+                            self.ko_captive = (row, col + 1)
+                            return True
+                    else:
+                        return True
             elif self.Matrix[row][col + 1] == color:
                 stone = self.search(point=(row, col + 1))
                 lib = len(stone.group.liberties)
@@ -162,14 +167,7 @@ class Board(object):
                     added_stone = Stone(board=self, point=(k, l), color="none")
                     self.update_liberties(added_stone=added_stone, end_of_game_fix=True)
 
-        if self.player_white_points > self.player_black_points:
-            print(f"white won by {self.player_white_points - self.player_black_points}")
-        elif self.player_white_points < self.player_black_points:
-            print(f"black won by {self.player_black_points - self.player_white_points}")
-        else:
-            print("its draw")
-
-        # print(f"w {self.player_white.points},b {self.player_black.points}")
+        return self.player_black_points, self.player_white_points
 
     def lets_play(self):
 
@@ -182,7 +180,7 @@ class Board(object):
                 print(f"PASS or Col:", end=" ")
                 col = input()
                 if col == "PASS":
-                    self.turn_is_passed(True)
+                    self.passed_turn += 1
                     self.ko_beating = (-1, -1)
                     self.ko_captive = (-1, -1)
                     break
@@ -192,7 +190,7 @@ class Board(object):
                     row = input()
                     row = ord(row) - 97
                     if self.move_is_legal(row=row, col=col):
-                        self.turn_is_passed(False)
+                        self.passed_turn = 0
                         added_stone = Stone(board=self, point=(row, col), color=self.actual_turn)
                         self.update_liberties(added_stone=added_stone)
                         self.update_board(x=row, y=col, color=self.actual_turn)
@@ -219,7 +217,23 @@ class Stone(object):
         self.color = color
         self.group = self.find_group()
 
-        # self.board.update_board(x=self.point[0], y=self.point[1], color=self.color)
+    def blanc_neigh_fix(self):
+        blanc = 0
+        if self.point[0] > 0:
+            if self.board.Matrix[self.point[0] - 1][self.point[1]] == '*':
+                blanc += 1
+        if self.point[0] < self.board.size - 1:
+            if self.board.Matrix[self.point[0] + 1][self.point[1]] == '*':
+                blanc += 1
+        if self.point[1] > 0:
+            if self.board.Matrix[self.point[0]][self.point[1] - 1] == '*':
+                blanc += 1
+        if self.point[1] < self.board.size - 1:
+            if self.board.Matrix[self.point[0]][self.point[1] + 1] == '*':
+                blanc += 1
+        if blanc <= 1:
+            return True
+        return False
 
     def remove(self):
         self.board.update_board(self.point[0], self.point[1])
@@ -373,8 +387,3 @@ class Group(object):
                 self.board.player_black_points += count
             self.remove()
 
-
-if __name__ == '__main__':
-
-    theBoard = Board(size=9)
-    theBoard.lets_play()
