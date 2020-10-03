@@ -23,8 +23,8 @@ to best match with hardware & network realities, according to the Python docs
 - common 
     - `socket_utils.py`
         - Handled the possibility of empty message received (which might cause the infinite while loop),
-        by returning the "error" string that the server logic handles as a move message. Not sure what to 
-        do with that implementation, because we don't tell the player  
+        by returning the "error" string that the server logic handles as a move message, which forces the player
+        to remake the move. 
 - client
     - `client_socket.py`
         - Added the `InterruptedError` handling, which might by caused by two players connecting at
