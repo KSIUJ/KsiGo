@@ -35,6 +35,13 @@ class Board(object):
         else:
             self.actual_turn = "black"
 
+    def turn_is_passed(self, is_passed):
+        if is_passed:
+            self.next_turn()
+            self.passed_turn += 1
+        else:
+            self.passed_turn = 0
+
     def update_board(self, x, y, color="*"):
         if color == "black":
             self.Matrix[x][y] = "b"
@@ -89,12 +96,9 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        if stone.blanc_neigh_fix():
-                            self.ko_beating = (row, col)
-                            self.ko_captive = (row-1, col)
-                            return True
-                    else:
-                        return True
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row-1, col)
+                    return True
             elif self.Matrix[row-1][col] == color:
                 stone = self.search(point=(row-1, col))
                 lib = len(stone.group.liberties)
@@ -108,12 +112,9 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        if stone.blanc_neigh_fix():
-                            self.ko_beating = (row, col)
-                            self.ko_captive = (row + 1, col)
-                            return True
-                    else:
-                        return True
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row+1, col)
+                    return True
             elif self.Matrix[row+1][col] == color:
                 stone = self.search(point=(row+1, col))
                 lib = len(stone.group.liberties)
@@ -127,12 +128,9 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        if stone.blanc_neigh_fix():
-                            self.ko_beating = (row, col)
-                            self.ko_captive = (row, col - 1)
-                            return True
-                    else:
-                        return True
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row, col-1)
+                    return True
             elif self.Matrix[row][col-1] == color:
                 stone = self.search(point=(row, col-1))
                 lib = len(stone.group.liberties)
@@ -146,12 +144,9 @@ class Board(object):
                 lib = len(stone.group.liberties)
                 if lib == 1:
                     if stone.group.abundance == 1:
-                        if stone.blanc_neigh_fix():
-                            self.ko_beating = (row, col)
-                            self.ko_captive = (row, col + 1)
-                            return True
-                    else:
-                        return True
+                        self.ko_beating = (row, col)
+                        self.ko_captive = (row, col+1)
+                    return True
             elif self.Matrix[row][col + 1] == color:
                 stone = self.search(point=(row, col + 1))
                 lib = len(stone.group.liberties)
@@ -180,7 +175,7 @@ class Board(object):
                 print(f"PASS or Col:", end=" ")
                 col = input()
                 if col == "PASS":
-                    self.passed_turn += 1
+                    self.turn_is_passed(True)
                     self.ko_beating = (-1, -1)
                     self.ko_captive = (-1, -1)
                     break
@@ -190,7 +185,7 @@ class Board(object):
                     row = input()
                     row = ord(row) - 97
                     if self.move_is_legal(row=row, col=col):
-                        self.passed_turn = 0
+                        self.turn_is_passed(False)
                         added_stone = Stone(board=self, point=(row, col), color=self.actual_turn)
                         self.update_liberties(added_stone=added_stone)
                         self.update_board(x=row, y=col, color=self.actual_turn)
@@ -217,23 +212,7 @@ class Stone(object):
         self.color = color
         self.group = self.find_group()
 
-    def blanc_neigh_fix(self):
-        blanc = 0
-        if self.point[0] > 0:
-            if self.board.Matrix[self.point[0] - 1][self.point[1]] == '*':
-                blanc += 1
-        if self.point[0] < self.board.size - 1:
-            if self.board.Matrix[self.point[0] + 1][self.point[1]] == '*':
-                blanc += 1
-        if self.point[1] > 0:
-            if self.board.Matrix[self.point[0]][self.point[1] - 1] == '*':
-                blanc += 1
-        if self.point[1] < self.board.size - 1:
-            if self.board.Matrix[self.point[0]][self.point[1] + 1] == '*':
-                blanc += 1
-        if blanc <= 1:
-            return True
-        return False
+        # self.board.update_board(x=self.point[0], y=self.point[1], color=self.color)
 
     def remove(self):
         self.board.update_board(self.point[0], self.point[1])
@@ -385,5 +364,5 @@ class Group(object):
                 self.board.player_white_points += count
             elif col == "white":
                 self.board.player_black_points += count
+                
             self.remove()
-
