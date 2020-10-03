@@ -6,7 +6,20 @@ class Client:
     def __init__(self, name, host, port):
         self.client_conn = socket.socket()  # default values: ipv4, tcp
         self.user_name = name
-        self.client_conn.connect((host, port))
+        self.connect(host, port)
+
+    def connect(self, host, port, run=0):
+        self.client_conn.settimeout(None)  # just to prevent connection timeout error from the system network
+
+        try:
+            self.client_conn.connect((host, port))
+        except InterruptedError:  # message interrupted by a non-expected signal
+            print("Your connection has been interrupted, try again")
+            run += 1
+            if run > 5:
+                raise Exception("Cannot connect")
+            else:
+                self.connect(host, port, run)
         util.send_message(self.client_conn, self.user_name)
 
     def game(self):
@@ -17,6 +30,8 @@ class Client:
             if is_game:
                 move = input("Make a move: ")
                 util.send_message(self.client_conn, move)
+
+        self.client_conn.close()
 
 
 # function creates a player and connects him to server
