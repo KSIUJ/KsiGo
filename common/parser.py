@@ -18,6 +18,9 @@ class Parser:
     def __init__(self):
         self.bindings = {}
 
+    def __init__(self, bindings: dict):
+        self.bindings = bindings
+
     def add_module(self, module_name: str):
         self.bindings[module_name] = {}
 
