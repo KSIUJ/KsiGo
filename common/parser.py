@@ -8,10 +8,11 @@ class ParsingError(KeyError):
 
 
 class Message:
-    def __init__(self, module: str, func: str, args: tuple):
+    def __init__(self, module: str, func: str, *args, **kwargs):
         self.module = module
         self.func = func
         self.args = args
+        self.kwargs = kwargs
 
 
 class Parser:
@@ -30,18 +31,20 @@ class Parser:
     def execute(self, command: bytes):
         command = self.decode(command)
         try:
-            self.bindings[command.module][command.func](command.args)
+            to_call = self.bindings[command.module][command.func]
         except KeyError as e:
             pe = ParsingError(e)
             raise pe
+        else:
+            to_call(*command.args, **command.kwargs)
 
     @staticmethod
     def encode(mssg: Message) -> bytes:
         return pickle.dumps(mssg)
 
     @staticmethod
-    def encode_message(module: str, func: str, args: tuple) -> bytes:
-        return encode(Message(module, func, args))
+    def encode_message(module: str, func: str, *args, **kwargs) -> bytes:
+        return encode(Message(module, func, *args, **kwargs))
 
     @staticmethod
     def decode(mssg: bytes) -> Message:
