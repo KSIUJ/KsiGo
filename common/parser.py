@@ -26,6 +26,10 @@ class Parser:
         self.bindings[module_name] = {}
 
     def add_func(self, module: str, func_name: str, func: typing.Callable):
+        if module not in self.bindings.keys():
+            self.add_module(module)
+            logging.warning(
+                f"Requested adding a function to non existing parser module: {module}")
         self.bindings[module][func_name] = func
 
     def execute(self, command: bytes):
