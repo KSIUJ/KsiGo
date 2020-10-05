@@ -1,5 +1,6 @@
 import pickle
 import typing
+import logging
 
 
 class ParsingError(KeyError):
@@ -16,10 +17,8 @@ class Message:
 
 
 class Parser:
-    def __init__(self):
-        self.bindings = {}
 
-    def __init__(self, bindings: dict):
+    def __init__(self, bindings: dict = {}):
         self.bindings = bindings
 
     def add_module(self, module_name: str):
@@ -48,7 +47,7 @@ class Parser:
 
     @staticmethod
     def encode_message(module: str, func: str, *args, **kwargs) -> bytes:
-        return encode(Message(module, func, *args, **kwargs))
+        return Parser.encode(Message(module, func, *args, **kwargs))
 
     @staticmethod
     def decode(mssg: bytes) -> Message:
@@ -65,13 +64,12 @@ class GameCommandManager:
         self.parser = parser
 
     @staticmethod
-    def place(args: tuple):
-        (x, y) = args
+    def place(x: int, y: int):
         print(
             f"This command places a stone on a board at coordinates ({x}, {y})")
 
     def encode_place(self, x: int, y: int) -> bytes:
-        return self.parser.encode_message("game", "place", (x, y))
+        return self.parser.encode_message("game", "place", x, y)
 
 
 if __name__ == "__main__":
