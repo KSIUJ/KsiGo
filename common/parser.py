@@ -32,13 +32,16 @@ class Parser:
             pe = ParsingError(e)
             raise pe
 
-    def encode(self, mssg: Message) -> bytes:
+    @staticmethod
+    def encode(mssg: Message) -> bytes:
         return pickle.dumps(mssg)
 
-    def encode_message(self, module: str, func: str, args: tuple) -> bytes:
-        return self.encode(Message(module, func, args))
+    @staticmethod
+    def encode_message(module: str, func: str, args: tuple) -> bytes:
+        return encode(Message(module, func, args))
 
-    def decode(self, mssg: bytes) -> Message:
+    @staticmethod
+    def decode(mssg: bytes) -> Message:
         return pickle.loads(mssg)
 
 # Example code that uses Parser
