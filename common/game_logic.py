@@ -215,7 +215,7 @@ class Board(object):
 
             self.next_turn()
 
-        self.count_points()
+        print(self.count_points())
 
 
 class Stone(object):
