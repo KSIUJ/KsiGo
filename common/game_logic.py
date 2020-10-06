@@ -64,9 +64,8 @@ class Board(object):
     def update_liberties(self, added_stone=None, end_of_game_fix=False):
 
         for group in self.groups:
-            if added_stone:
-                if group == added_stone.group:
-                    continue
+            if added_stone and group == added_stone.group:
+                continue
             group.update_liberties(end_of_game_fix=end_of_game_fix)
         if added_stone:
             added_stone.group.update_liberties(end_of_game_fix=end_of_game_fix)
