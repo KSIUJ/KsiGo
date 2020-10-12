@@ -18,14 +18,18 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(436, 604)
+        MainWindow.setMouseTracking(True)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        self.centralwidget.setMouseTracking(True)
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.stackedWidget = QStackedWidget(self.centralwidget)
         self.stackedWidget.setObjectName(u"stackedWidget")
+        self.stackedWidget.setMouseTracking(True)
         self.welcome_screen = QWidget()
         self.welcome_screen.setObjectName(u"welcome_screen")
+        self.welcome_screen.setMouseTracking(True)
         self.welcome_screen.setStyleSheet(u"QLabel {\n"
 "	font-size: 50px\n"
 "}\n"
@@ -37,6 +41,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.start_button = QPushButton(self.welcome_screen)
         self.start_button.setObjectName(u"start_button")
+        self.start_button.setMouseTracking(True)
 
         self.gridLayout.addWidget(self.start_button, 2, 0, 1, 1)
 
@@ -50,6 +55,7 @@ class Ui_MainWindow(object):
         self.ksi_png.setSizePolicy(sizePolicy)
         self.ksi_png.setMinimumSize(QSize(400, 400))
         self.ksi_png.setBaseSize(QSize(500, 500))
+        self.ksi_png.setMouseTracking(True)
         self.ksi_png.setAutoFillBackground(False)
         self.ksi_png.setPixmap(QPixmap(u"res/ksi.png"))
         self.ksi_png.setScaledContents(True)
@@ -60,6 +66,7 @@ class Ui_MainWindow(object):
 
         self.ksi_go_text = QLabel(self.welcome_screen)
         self.ksi_go_text.setObjectName(u"ksi_go_text")
+        self.ksi_go_text.setMouseTracking(True)
         self.ksi_go_text.setStyleSheet(u"")
         self.ksi_go_text.setScaledContents(False)
         self.ksi_go_text.setAlignment(Qt.AlignCenter)
@@ -70,6 +77,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.welcome_screen)
         self.username_screen = QWidget()
         self.username_screen.setObjectName(u"username_screen")
+        self.username_screen.setMouseTracking(True)
         self.verticalLayout_2 = QVBoxLayout(self.username_screen)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Preferred)
@@ -79,6 +87,7 @@ class Ui_MainWindow(object):
         self.username = QLabel(self.username_screen)
         self.username.setObjectName(u"username")
         self.username.setMaximumSize(QSize(16777215, 30))
+        self.username.setMouseTracking(True)
 
         self.verticalLayout_2.addWidget(self.username)
 
@@ -92,6 +101,7 @@ class Ui_MainWindow(object):
         self.connect_button = QPushButton(self.username_screen)
         self.connect_button.setObjectName(u"connect_button")
         self.connect_button.setMinimumSize(QSize(0, 50))
+        self.connect_button.setMouseTracking(True)
 
         self.verticalLayout_2.addWidget(self.connect_button)
 
@@ -102,6 +112,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.username_screen)
         self.board_size_screen = QWidget()
         self.board_size_screen.setObjectName(u"board_size_screen")
+        self.board_size_screen.setMouseTracking(True)
         self.board_size_screen.setStyleSheet(u"QLabel {\n"
 "	font-size: 25px\n"
 "}")
@@ -109,16 +120,19 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.x9_button = QPushButton(self.board_size_screen)
         self.x9_button.setObjectName(u"x9_button")
+        self.x9_button.setMouseTracking(True)
 
         self.gridLayout_2.addWidget(self.x9_button, 1, 0, 1, 1)
 
         self.x13_button = QPushButton(self.board_size_screen)
         self.x13_button.setObjectName(u"x13_button")
+        self.x13_button.setMouseTracking(True)
 
         self.gridLayout_2.addWidget(self.x13_button, 2, 0, 1, 1)
 
         self.x19_button = QPushButton(self.board_size_screen)
         self.x19_button.setObjectName(u"x19_button")
+        self.x19_button.setMouseTracking(True)
 
         self.gridLayout_2.addWidget(self.x19_button, 3, 0, 1, 1)
 
@@ -129,6 +143,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
         self.label.setSizePolicy(sizePolicy1)
+        self.label.setMouseTracking(True)
         self.label.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
@@ -140,6 +155,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
+        self.statusbar.setMouseTracking(True)
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)

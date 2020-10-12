@@ -1,8 +1,9 @@
 import OpenGL.GL as gl
 import PySide2
 
-from PySide2.QtWidgets import QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout, QDialog, QLabel
+from PySide2.QtWidgets import QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout, QDialog
 from PySide2.QtGui import QMouseEvent
+from PySide2.QtCore import QEvent
 from client.gui.ui_main_window import Ui_MainWindow
 from client.gui.ui_game_window import Ui_GameWindow
 from client.gui.ui_end_dialog import Ui_Dialog
@@ -56,11 +57,13 @@ class GlWidget(QOpenGLWidget):
 
     def __init__(self, size, events: IClient):
         super().__init__()
+        self.setMouseTracking(True)
         self.my_turn = False
         self.size = size
         self.events = events
         self.window_size = 0.9
         self.board = Board(size)
+        self.hint = None
 
     def initializeGL(self):
         super().initializeGL()
@@ -74,6 +77,25 @@ class GlWidget(QOpenGLWidget):
         gl.glRectf(-1, -1, 1, 1)
 
         step = (2 * self.window_size / (self.size - 1))
+
+        if self.size == 19:
+            point_size = 0.05
+        elif self.size == 13:
+            point_size = 0.07
+        else:
+            point_size = 0.1
+
+        curr_point_size = min(self.width(), self.height()) * point_size
+        gl.glPointSize(curr_point_size)
+
+        if self.hint:
+            gl.glColor3f(0.55, 0.27, 0.07)
+            gl.glPointSize(curr_point_size * 0.5)
+            gl.glBegin(gl.GL_POINTS)
+            gl.glVertex2f(-self.window_size + (self.hint[0] * step), self.window_size - (self.hint[1] * step))
+            gl.glEnd()
+
+        gl.glPointSize(curr_point_size)
 
         for i in range(self.size):
             gl.glColor3f(0, 0, 0)
@@ -89,15 +111,6 @@ class GlWidget(QOpenGLWidget):
             gl.glVertex2f(-self.window_size, -self.window_size + index)
             gl.glVertex2f(self.window_size, -self.window_size + index)
             gl.glEnd()
-
-        if self.size == 19:
-            point_size = 0.05
-        elif self.size == 13:
-            point_size = 0.07
-        else:
-            point_size = 0.1
-
-        gl.glPointSize(min(self.width(), self.height()) * point_size)
 
         for i in range(self.size):
             gl.glEnable(gl.GL_POINT_SMOOTH)
@@ -115,6 +128,30 @@ class GlWidget(QOpenGLWidget):
                     gl.glBegin(gl.GL_POINTS)
                     gl.glVertex2f(-self.window_size + (j * step), self.window_size - (i * step))
                     gl.glEnd()
+
+    def mouse_move(self, pos):
+        x = ((-self.width() / 2) + pos.x()) / (self.window_size * self.width() / 2)
+        y = -((self.height() / 2) - pos.y()) / (self.window_size * self.height() / 2)
+
+        index_x = 0
+        index_y = 0
+
+        diff = 2
+        for index in range(self.size):
+            i = -1 + (index * (2 / (self.size - 1)))
+            if abs(x - i) < diff:
+                index_x = index
+                diff = abs(x - i)
+
+        diff = 2
+        for index in range(self.size):
+            i = -1 + (index * (2 / (self.size - 1)))
+            if abs(y - i) < diff:
+                index_y = index
+                diff = abs(y - i)
+
+        self.hint = index_x, index_y
+        self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         pos = event.pos()
@@ -167,6 +204,8 @@ class GameWindow(QMainWindow):
     def __init__(self, size, events: IClient):
         super().__init__()
 
+        self.setMouseTracking(True)
+
         self.size = size
         self.events = events
 
@@ -174,10 +213,13 @@ class GameWindow(QMainWindow):
 
         self.ui = Ui_GameWindow()
         self.ui.setupUi(self)
+        self.ui.opengl_container.setMouseTracking(True)
         self.setWindowTitle("Ksi Go")
 
         layout = QVBoxLayout()
         self.gl_widget = GlWidget(size, events)
+        self.gl_widget.setMouseTracking(True)
+        self.gl_widget.installEventFilter(self)
         layout.addWidget(self.gl_widget)
         self.ui.opengl_container.setLayout(layout)
 
@@ -185,6 +227,12 @@ class GameWindow(QMainWindow):
         self.ui.resign_button.clicked.connect(self.resign)
 
         self.show()
+
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.MouseMove:
+            self.gl_widget.mouse_move(event.pos())
+            self.gl_widget.update()
+        return QMainWindow.eventFilter(self, source, event)
 
     def pass_(self):
         if self.events.on_pass_clicked():

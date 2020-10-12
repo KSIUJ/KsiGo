@@ -10,14 +10,26 @@
     <height>604</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
       <widget class="QWidget" name="welcome_screen">
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
        <property name="styleSheet">
         <string notr="true">QLabel {
 	font-size: 50px
@@ -30,6 +42,9 @@ QPushButton {
        <layout class="QGridLayout" name="gridLayout">
         <item row="2" column="0">
          <widget class="QPushButton" name="start_button">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>Start</string>
           </property>
@@ -58,6 +73,9 @@ QPushButton {
             <height>500</height>
            </size>
           </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
@@ -80,6 +98,9 @@ QPushButton {
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="ksi_go_text">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
@@ -100,6 +121,9 @@ QPushButton {
        </layout>
       </widget>
       <widget class="QWidget" name="username_screen">
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <spacer name="verticalSpacer_2">
@@ -124,6 +148,9 @@ QPushButton {
             <width>16777215</width>
             <height>30</height>
            </size>
+          </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Username</string>
@@ -151,6 +178,9 @@ QPushButton {
             <height>50</height>
            </size>
           </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>Connect</string>
           </property>
@@ -175,6 +205,9 @@ QPushButton {
        </layout>
       </widget>
       <widget class="QWidget" name="board_size_screen">
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
        <property name="styleSheet">
         <string notr="true">QLabel {
 	font-size: 25px
@@ -183,6 +216,9 @@ QPushButton {
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="1" column="0">
          <widget class="QPushButton" name="x9_button">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>9 x 9</string>
           </property>
@@ -190,6 +226,9 @@ QPushButton {
         </item>
         <item row="2" column="0">
          <widget class="QPushButton" name="x13_button">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>13 x 13</string>
           </property>
@@ -197,6 +236,9 @@ QPushButton {
         </item>
         <item row="3" column="0">
          <widget class="QPushButton" name="x19_button">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>19 x 19</string>
           </property>
@@ -209,6 +251,9 @@ QPushButton {
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Choose board size</string>
@@ -224,7 +269,11 @@ QPushButton {
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
