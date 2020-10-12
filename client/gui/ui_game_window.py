@@ -9,7 +9,6 @@
 ################################################################################
 
 from PySide2.QtCore import *
-from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
@@ -18,15 +17,12 @@ class Ui_GameWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(800, 600)
-        MainWindow.setMouseTracking(True)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.centralwidget.setMouseTracking(True)
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.opengl_container = QFrame(self.centralwidget)
         self.opengl_container.setObjectName(u"opengl_container")
-        self.opengl_container.setMouseTracking(True)
         self.opengl_container.setFrameShape(QFrame.StyledPanel)
         self.opengl_container.setFrameShadow(QFrame.Raised)
 
@@ -35,7 +31,6 @@ class Ui_GameWindow(object):
         self.frame = QFrame(self.centralwidget)
         self.frame.setObjectName(u"frame")
         self.frame.setMaximumSize(QSize(16777215, 60))
-        self.frame.setMouseTracking(True)
         self.frame.setFrameShape(QFrame.StyledPanel)
         self.frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout = QHBoxLayout(self.frame)
@@ -47,7 +42,6 @@ class Ui_GameWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.pass_button.sizePolicy().hasHeightForWidth())
         self.pass_button.setSizePolicy(sizePolicy)
-        self.pass_button.setMouseTracking(True)
 
         self.horizontalLayout.addWidget(self.pass_button)
 
@@ -55,7 +49,6 @@ class Ui_GameWindow(object):
         self.resign_button.setObjectName(u"resign_button")
         sizePolicy.setHeightForWidth(self.resign_button.sizePolicy().hasHeightForWidth())
         self.resign_button.setSizePolicy(sizePolicy)
-        self.resign_button.setMouseTracking(True)
 
         self.horizontalLayout.addWidget(self.resign_button)
 
@@ -65,7 +58,6 @@ class Ui_GameWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
-        self.statusbar.setMouseTracking(True)
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
