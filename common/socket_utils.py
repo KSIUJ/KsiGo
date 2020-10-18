@@ -9,8 +9,6 @@ def receive_message(connection):
         chunk = connection.recv(1024)
         if chunk:
             message += chunk.decode()
-        else:
-            message = "error: message was not correctly received"
 
     print(f"     received < {message_len} | {message}")
     return message

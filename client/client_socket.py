@@ -8,8 +8,11 @@ class Client:
             self.client_conn = socket.socket()  # default values: ipv4, tcp
         except OSError:
             self.client_conn = None
+
+        if self.client_conn is not None:
+            self.connect(host, port)
+
         self.user_name = name
-        self.connect(host, port)
 
         if self.client_conn is not None:
             self.send_username()
@@ -30,13 +33,17 @@ class Client:
     def game(self):
         is_game = True
         while is_game:
-            is_game = self.client_conn.recv(1).decode()
+            if self.client_conn is not None:
+                is_game = self.client_conn.recv(1).decode()
+            else:
+                is_game = False
 
             if is_game:
                 move = input("Make a move: ")
                 util.send_message(self.client_conn, move)
 
-        self.client_conn.close()
+        if self.client_conn is not None:
+            self.client_conn.close()
 
 
 # function creates a player and connects him to server
