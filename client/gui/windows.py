@@ -96,11 +96,12 @@ class GlWidget(QOpenGLWidget):
             gl.glEnd()
 
         gl.glPointSize(curr_point_size)
+        gl.glEnable(gl.GL_POINT_SMOOTH)
+
+        gl.glColor3f(0, 0, 0)
+        gl.glLineWidth(3)
 
         for i in range(self.size):
-            gl.glColor3f(0, 0, 0)
-            gl.glLineWidth(3)
-
             index = i * step
             gl.glBegin(gl.GL_LINES)
             gl.glVertex2f(-self.window_size + index, -self.window_size)
@@ -113,7 +114,6 @@ class GlWidget(QOpenGLWidget):
             gl.glEnd()
 
         for i in range(self.size):
-            gl.glEnable(gl.GL_POINT_SMOOTH)
             for j in range(self.size):
                 if self.board.Matrix[i][j] == 'b':
                     gl.glColor3f(0, 0, 0)
