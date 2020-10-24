@@ -39,20 +39,20 @@ class Server:
                 return
 
     def connection(self) -> bool:
-        if self.server_conn is not None:
-            self.server_conn.listen(2)  # buffer for two connections
-            print("Waiting for connections...")
-
-            try:
-                self.wait_for_clients()
-            except socket.timeout:
-                print("Failed to establish connection with 2 players (connection timeout)")
-                self.close_game()
-                return False
-
-            return True
-        else:
+        if self.server_conn is None:
             return False
+
+        self.server_conn.listen(2)  # buffer for two connections
+        print("Waiting for connections...")
+
+        try:
+            self.wait_for_clients()
+        except socket.timeout:
+            print("Failed to establish connection with 2 players (connection timeout)")
+            self.close_game()
+            return False
+
+        return True
 
     def close_game(self):
         for user in self.clients:
@@ -97,6 +97,6 @@ def create_server(address="localhost", port=9999):
     new_server = Server(address, port)
     if new_server.is_open is False:
         return False
-    if new_server.connection():
+    if new_server.connection:
         new_server.game()
         new_server.close_game()
