@@ -38,6 +38,6 @@ to best match with hardware & network realities, according to the Python docs
             asynchronous connects.
 
 #### TODO
-- [ ] Class cleanup
+- [X] Class cleanup
 - [X] Errors handling check and improve
 - [ ] Implement functionality of rooms creating
