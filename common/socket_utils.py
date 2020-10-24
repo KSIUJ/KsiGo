@@ -6,12 +6,15 @@ def receive_message(connection):
     message = ""
 
     while len(message) < message_len:
-        message += connection.recv(1024).decode()
+        chunk = connection.recv(1024)
+        if chunk:
+            message += chunk.decode()
 
+    print(f"     received < {message_len} | {message}")
     return message
 
 
 def send_message(connection, message):
     parsed_message = struct.pack('i', len(message)) + bytes(message, 'utf-8')
-    print(parsed_message)
+    print(f"     send > {message}")
     connection.sendall(parsed_message)
