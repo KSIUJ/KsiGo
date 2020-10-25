@@ -2,25 +2,26 @@ import socket
 from common import socket_utils as util
 
 
-class Client:
-    def __init__(self, name, host, port):
+class Client(util.SocketCommon):
+    def __init__(self, name):
+        super().__init__()
         try:
             self.client_conn = socket.socket()  # default values: ipv4, tcp
         except OSError:
             self.client_conn = None
 
         if self.client_conn is not None:
-            self.connect(host, port)
+            self.establish_connection()
 
         self.user_name = name
 
         if self.client_conn is not None:
             self.send_username()
 
-    def connect(self, host, port):
+    def establish_connection(self):
         try:
             self.client_conn.settimeout(None)  # just to prevent connection timeout error from the system network
-            self.client_conn.connect((host, port))
+            self.client_conn.connect((self.host, self.port))
         except OSError:
             self.client_conn.close()
             self.client_conn = None
@@ -28,7 +29,7 @@ class Client:
             return
 
     def send_username(self):
-        util.send_message(self.client_conn, self.user_name)
+        self.send_message(self.client_conn, self.user_name)
 
     def game(self):
         is_game = True
@@ -40,7 +41,7 @@ class Client:
 
             if is_game:
                 move = input("Make a move: ")
-                util.send_message(self.client_conn, move)
+                self.send_message(self.client_conn, move)
 
         if self.client_conn is not None:
             self.client_conn.close()
@@ -48,6 +49,7 @@ class Client:
 
 # function creates a player and connects him to server
 # remember that you have to create two clients to start a game
-def create_player(name, address="localhost", port=9999):
-    player = Client(name, address, port)
+def create_player(name):
+    player = Client(name)
+    # player.set_host_and_port("localhost", 9999) # uncomment to change default values
     player.game()

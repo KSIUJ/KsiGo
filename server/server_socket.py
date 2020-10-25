@@ -2,8 +2,9 @@ import socket
 from common import socket_utils as util
 
 
-class Server:
-    def __init__(self, host, port):
+class Server(util.SocketCommon):
+    def __init__(self):
+        super().__init__()
         try:
             self.server_conn = socket.socket()  # default values: ipv4, tcp
         except OSError:
@@ -11,20 +12,21 @@ class Server:
 
         self.clients = []
         self.is_open = True
-        if self.bind_with_check(host, port) is False:
+
+        if self.bind_with_check() is False:
             self.is_open = False
             self.close_game()
 
-    def bind_with_check(self, host, port):
-        if self.server_conn is not None:
-            try:
-                self.server_conn.bind((host, port))
-                print("Socket created")
-                return True
-            except OSError:
-                print('Bind failed')
-                return False
-        else:
+    def bind_with_check(self):
+        if self.server_conn is None:
+            return False
+
+        try:
+            self.server_conn.bind((self.host, self.port))
+            print("Socket created")
+            return True
+        except OSError:
+            print('Bind failed')
             return False
 
     def wait_for_clients(self):
@@ -32,13 +34,13 @@ class Server:
             if self.server_conn is not None:
                 client, addr = self.server_conn.accept()
                 self.clients.append(client)
-                username = util.receive_message(client)
+                username = self.receive_message(client)
 
                 print(f"Connected with {username} on address {addr}")
             else:
                 return
 
-    def connection(self) -> bool:
+    def create_connection(self) -> bool:
         if self.server_conn is None:
             return False
 
@@ -71,7 +73,7 @@ class Server:
             curr_player.send(bytes(True))
 
             try:
-                received_move = util.receive_message(curr_player)
+                received_move = self.receive_message(curr_player)
             except ConnectionResetError:
                 # that error may happen when Windows client will be
                 # closed abruptly in a TCP based program
@@ -93,10 +95,11 @@ class Server:
 
 
 # function creates a server connection for two players
-def create_server(address="localhost", port=9999):
-    new_server = Server(address, port)
-    if new_server.is_open is False:
+def create_server():
+    server = Server()
+    # curr_server.set_host_and_port("localhost", 9999) # uncomment to change default values
+    if server.is_open is False:
         return False
-    if new_server.connection:
-        new_server.game()
-        new_server.close_game()
+    if server.create_connection():
+        server.game()
+        server.close_game()
