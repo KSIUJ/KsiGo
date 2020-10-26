@@ -70,7 +70,7 @@ class Server(util.SocketCommon):
         player = 0
         while is_game:
             curr_player = self.clients[player]
-            curr_player.send(bytes(True))
+            # curr_player.send(bytes(True))
 
             try:
                 received_move = self.receive_message(curr_player)

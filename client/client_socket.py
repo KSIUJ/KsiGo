@@ -29,18 +29,18 @@ class Client(util.SocketCommon):
             return
 
     def send_username(self):
-        self.send_message(self.client_conn, self.user_name)
+        self.send_message(self.client_conn, bytes(self.user_name, "utf-8"))
 
     def game(self):
         is_game = True
         while is_game:
-            if self.client_conn is not None:
-                is_game = self.client_conn.recv(1).decode()
-            else:
-                is_game = False
+            # if self.client_conn is not None:
+            #     is_game = self.client_conn.recv(1).decode()
+            # else:
+            #     is_game = False
 
             if is_game:
-                move = input("Make a move: ")
+                move = bytes(input("Make a move: "), "utf-8")
                 self.send_message(self.client_conn, move)
 
         if self.client_conn is not None:
@@ -53,3 +53,7 @@ def create_player(name):
     player = Client(name)
     # player.set_host_and_port("localhost", 9999) # uncomment to change default values
     player.game()
+
+
+if __name__ == '__main__':
+    create_player('noname')
