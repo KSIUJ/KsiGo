@@ -4,7 +4,7 @@ import struct
 class SocketCommon:
     def __init__(self):
         self.host = "localhost"
-        self.port = 9999
+        self.port = 8888
 
     def set_host_and_port(self, host, port):
         self.host = host

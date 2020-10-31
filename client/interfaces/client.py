@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IClient(ABC):
+
+    controller = None
+
     @abstractmethod
     def on_username_provided(self, username: str):
         pass
@@ -15,7 +18,7 @@ class IClient(ABC):
         pass
 
     @abstractmethod
-    def on_pawn_put(self):
+    def on_pawn_put(self, y: int, x: int):
         pass
 
     @abstractmethod

@@ -21,6 +21,7 @@ class Client(util.SocketCommon):
     def establish_connection(self):
         try:
             self.client_conn.settimeout(None)  # just to prevent connection timeout error from the system network
+            print((self.host, self.port))
             self.client_conn.connect((self.host, self.port))
         except OSError:
             self.client_conn.close()
@@ -30,6 +31,12 @@ class Client(util.SocketCommon):
 
     def send_username(self):
         self.send_message(self.client_conn, bytes(self.user_name, "utf-8"))
+
+    def send_msg(self, msg: bytes):
+        self.send_message(self.client_conn, msg)
+
+    def recv_msg(self):
+        return self.receive_message(self.client_conn)
 
     def game(self):
         is_game = True

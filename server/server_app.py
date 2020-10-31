@@ -19,7 +19,8 @@ class User:
 class ServerApp:
     def __init__(self, host: str, port: int):
         self.socket = SocketServer()
-        self.socket.set_host_and_port(host=host, port=port)
+        # self.socket.set_host_and_port(host=host, port=port)
+        self.socket.create_connection()
 
         self.users = []
 
@@ -28,6 +29,7 @@ class ServerApp:
         self.parser.add_func("game", "place", self.place)
 
         self.board = Logic.Board(9)
+        self.current_color = "black"
 
     def make_a_connection(self):
         for conn, addr in self.socket.listen_for_users():
@@ -38,7 +40,7 @@ class ServerApp:
                             )
             user.set_reader(reader_thread=reader)
             self.users.append(user)
-            reader.start()
+            # reader.start()
 
     def read_handler(self, user: User):
         while user.is_active:
@@ -53,9 +55,12 @@ class ServerApp:
             curr_player = players[player_id].connection
 
             # curr_player.send(bytes(True))
-            moves.append(self.socket.receive_message(curr_player))
-            print(self.parser.execute(moves[-1]))
-            print(f'Player {player_id} made a move: {moves[-1]}')
+            move = self.socket.receive_message(curr_player)
+            moves.append(move)
+            print(f'Player {player_id} made a move: {self.parser.decode(move)}\n')
+            self.parser.execute(move)
+            for player in players:
+                self.socket.send_message(player.connection, move)
 
             player_id = (player_id + 1) % 2
 
@@ -64,13 +69,15 @@ class ServerApp:
             #     is_game = False
 
     def place(self, x: int, y: int):
-        self.board.update_board(x=x, y=y, color='b')
+        self.board.update_board(x=x, y=y, color=self.current_color)
+        self.current_color = 'white' if self.current_color == 'black' else 'black'
+        print(f"placed on ({x}, {y})")
         self.board.print_board()
 
 
 if __name__ == '__main__':
 
-    server = ServerApp(host='0.0.0.0', port=9999)
+    server = ServerApp(host='localhost', port=8888)
 
     making_connections = Thread(target=server.make_a_connection, daemon=True)
     making_connections.start()

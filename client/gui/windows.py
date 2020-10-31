@@ -3,7 +3,7 @@ import PySide2
 
 from PySide2.QtWidgets import QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout, QDialog
 from PySide2.QtGui import QMouseEvent
-from PySide2.QtCore import QEvent
+from PySide2.QtCore import QEvent, Slot, Signal
 from client.gui.ui_main_window import Ui_MainWindow
 from client.gui.ui_game_window import Ui_GameWindow
 from client.gui.ui_end_dialog import Ui_Dialog
@@ -63,7 +63,20 @@ class GlWidget(QOpenGLWidget):
         self.events = events
         self.window_size = 0.9
         self.board = Board(size)
+        events.controller.board_update_signal.connect(self.draw_move)
         self.hint = None
+
+    @Slot(int, int)
+    def draw_move(self, index_x: int, index_y: int):
+        added_stone = Stone(board=self.board, point=(index_y, index_x), color=self.board.actual_turn)
+        self.board.update_liberties(added_stone=added_stone)
+        self.board.update_board(x=index_x, y=index_y, color=self.board.actual_turn)
+
+        if (index_y, index_x) != self.board.ko_beating:
+            self.board.ko_beating = (-1, -1)
+            self.board.ko_captive = (-1, -1)
+
+        self.board.next_turn()
 
     def initializeGL(self):
         super().initializeGL()
@@ -179,14 +192,14 @@ class GlWidget(QOpenGLWidget):
         if self.board.move_is_legal(index_y, index_x):
             added_stone = Stone(board=self.board, point=(index_y, index_x), color=self.board.actual_turn)
             self.board.update_liberties(added_stone=added_stone)
-            self.board.update_board(x=index_y, y=index_x, color=self.board.actual_turn)
+            # self.board.update_board(x=index_y, y=index_x, color=self.board.actual_turn)
 
             if (index_y, index_x) != self.board.ko_beating:
                 self.board.ko_beating = (-1, -1)
                 self.board.ko_captive = (-1, -1)
 
             self.board.next_turn()
-            self.events.on_pawn_put()
+            self.events.on_pawn_put(index_y, index_x)
         else:
             box = QMessageBox()
             box.setWindowTitle("Error")
