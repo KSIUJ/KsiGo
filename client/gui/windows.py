@@ -3,7 +3,7 @@ import PySide2
 
 from PySide2.QtWidgets import QMainWindow, QMessageBox, QOpenGLWidget, QVBoxLayout, QDialog
 from PySide2.QtGui import QMouseEvent
-from PySide2.QtCore import QEvent
+from PySide2.QtCore import QEvent, Slot
 from client.gui.ui_main_window import Ui_MainWindow
 from client.gui.ui_game_window import Ui_GameWindow
 from client.gui.ui_end_dialog import Ui_Dialog
@@ -34,11 +34,12 @@ class MainWindow(QMainWindow):
         self.show()
 
     def start(self):
-        self.ui.stackedWidget.setCurrentWidget(self.ui.board_size_screen)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.username_screen)
 
     def check_username(self):
         username = self.ui.username_input.toPlainText()
         if 3 <= len(username) <= 20:
+            self.events.on_username_provided(username)
             self.ui.stackedWidget.setCurrentWidget(self.ui.board_size_screen)
         else:
             self.ui.username_input.clear()
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
 
     def play(self, size):
         self.game = GameWindow(size, self.events)
+        self.events.on_game_window_opened(size)
         self.close()
 
 
@@ -64,6 +66,8 @@ class GlWidget(QOpenGLWidget):
         self.window_size = 0.9
         self.board = Board(size)
         self.hint = None
+
+        self.events.opponent_handler.opponent_move_signal.connect(self.opponent_moved)
 
     def initializeGL(self):
         super().initializeGL()
@@ -154,50 +158,70 @@ class GlWidget(QOpenGLWidget):
         self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
-        pos = event.pos()
+        if self.events.is_my_turn():
+            index_x = 0
+            index_y = 0
 
-        x = ((-self.width() / 2) + pos.x()) / (self.window_size * self.width() / 2)
-        y = -((self.height() / 2) - pos.y()) / (self.window_size * self.height() / 2)
+            pos = event.pos()
 
-        index_x = 0
-        index_y = 0
+            x = ((-self.width() / 2) + pos.x()) / (self.window_size * self.width() / 2)
+            y = -((self.height() / 2) - pos.y()) / (self.window_size * self.height() / 2)
 
-        diff = 2
-        for index in range(self.size):
-            i = -1 + (index * (2 / (self.size - 1)))
-            if abs(x - i) < diff:
-                index_x = index
-                diff = abs(x - i)
+            diff = 2
+            for index in range(self.size):
+                i = -1 + (index * (2 / (self.size - 1)))
+                if abs(x - i) < diff:
+                    index_x = index
+                    diff = abs(x - i)
 
-        diff = 2
-        for index in range(self.size):
-            i = -1 + (index * (2 / (self.size - 1)))
-            if abs(y - i) < diff:
-                index_y = index
-                diff = abs(y - i)
+            diff = 2
+            for index in range(self.size):
+                i = -1 + (index * (2 / (self.size - 1)))
+                if abs(y - i) < diff:
+                    index_y = index
+                    diff = abs(y - i)
 
-        if self.board.move_is_legal(index_y, index_x):
-            added_stone = Stone(board=self.board, point=(index_y, index_x), color=self.board.actual_turn)
-            self.board.update_liberties(added_stone=added_stone)
-            self.board.update_board(x=index_y, y=index_x, color=self.board.actual_turn)
+            if self.board.move_is_legal(index_y, index_x):
+                added_stone = Stone(board=self.board, point=(index_y, index_x), color=self.board.actual_turn)
+                self.board.update_liberties(added_stone=added_stone)
+                self.board.update_board(x=index_y, y=index_x, color=self.board.actual_turn)
 
-            if (index_y, index_x) != self.board.ko_beating:
-                self.board.ko_beating = (-1, -1)
-                self.board.ko_captive = (-1, -1)
+                if (index_y, index_x) != self.board.ko_beating:
+                    self.board.ko_beating = (-1, -1)
+                    self.board.ko_captive = (-1, -1)
 
-            self.board.next_turn()
-            self.events.on_pawn_put()
+                self.board.next_turn()
+                self.events.on_pawn_put(index_x, index_y)
+            else:
+                invalid_move_box = QMessageBox()
+                invalid_move_box.setWindowTitle("Error")
+                invalid_move_box.setText("Invalid move.")
+                invalid_move_box.setIcon(QMessageBox.Warning)
+                invalid_move_box.exec()
+
         else:
-            box = QMessageBox()
-            box.setWindowTitle("Error")
-            box.setText("Invalid move.")
-            box.setIcon(QMessageBox.Warning)
-            box.exec()
+            opponents_move_box = QMessageBox()
+            opponents_move_box.setWindowTitle("Error")
+            opponents_move_box.setText("Wait for your opponent's move.")
+            opponents_move_box.setIcon(QMessageBox.Warning)
+            opponents_move_box.exec()
 
         self.update()
 
     def get_points(self):
         return self.board.count_points()
+
+    @Slot(int, int)
+    def opponent_moved(self, x: int, y: int):
+        added_stone = Stone(board=self.board, point=(y, x), color=self.board.actual_turn)
+        self.board.update_liberties(added_stone=added_stone)
+        self.board.update_board(x=y, y=x, color=self.board.actual_turn)
+
+        if (y, x) != self.board.ko_beating:
+            self.board.ko_beating = (-1, -1)
+            self.board.ko_captive = (-1, -1)
+
+        self.board.next_turn()
 
 
 class GameWindow(QMainWindow):
@@ -208,6 +232,9 @@ class GameWindow(QMainWindow):
 
         self.size = size
         self.events = events
+
+        self.events.opponent_handler.opponent_pass_signal.connect(self.opponent_passed)
+        self.events.opponent_handler.opponent_resign_signal.connect(self.opponent_resigned)
 
         self.dialog = None
 
@@ -228,6 +255,20 @@ class GameWindow(QMainWindow):
 
         self.show()
 
+    @Slot()
+    def opponent_resigned(self):
+        self.dialog = EndGameDialog("You have won because the other player resigned.", self, self.events)
+
+    @Slot()
+    def opponent_passed(self):
+        self.check_double_pass()
+
+        invalid_move_box = QMessageBox()
+        invalid_move_box.setWindowTitle("Your turn")
+        invalid_move_box.setText("Your opponent has passed")
+        invalid_move_box.setIcon(QMessageBox.Warning)
+        invalid_move_box.exec()
+
     def eventFilter(self, source, event):
         if event.type() == QEvent.MouseMove:
             self.gl_widget.mouse_move(event.pos())
@@ -235,7 +276,18 @@ class GameWindow(QMainWindow):
         return QMainWindow.eventFilter(self, source, event)
 
     def pass_(self):
-        if self.events.on_pass_clicked():
+        if self.events.is_my_turn():
+            self.events.on_pass_clicked()
+            self.check_double_pass()
+        else:
+            opponents_move_box = QMessageBox()
+            opponents_move_box.setWindowTitle("Error")
+            opponents_move_box.setText("Wait for your opponent's move.")
+            opponents_move_box.setIcon(QMessageBox.Warning)
+            opponents_move_box.exec()
+
+    def check_double_pass(self):
+        if self.events.check_double_pass():
             black, white = self.gl_widget.get_points()
             diff = abs(black - white)
             if black > white:
@@ -257,6 +309,7 @@ class GameWindow(QMainWindow):
 
         if button == QMessageBox.Ok:
             self.close()
+            self.events.on_resign_confirmed()
             self.events.open()
 
 
