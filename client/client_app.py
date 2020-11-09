@@ -18,6 +18,7 @@ class Client(IClient):
         opponent_resign_signal = Signal()
 
     def __init__(self):
+        self.game = False
         self.app = None
         self.passes = 0
         self.username = None
@@ -56,12 +57,10 @@ class Client(IClient):
     def check_double_pass(self):
         self.my_turn = not self.my_turn
         self.passes += 1
-        if self.passes >= 2:
+        if self.passes == 2:
+            self.game = False
             return True
         return False
-
-    def get_passes(self) -> int:
-        return self.passes
 
     def on_pass_clicked(self):
         self.socket.send(self.encode_pass())
@@ -73,6 +72,7 @@ class Client(IClient):
 
     def on_resign_confirmed(self):
         self.socket.send(self.encode_resign())
+        self.game = False
 
     def on_opponent_moved(self, x: int, y: int):
         self.opponent_handler.opponent_move_signal.emit(x, y)
@@ -84,10 +84,15 @@ class Client(IClient):
 
     def on_opponent_resigned(self):
         self.opponent_handler.opponent_resign_signal.emit()
+        self.game = False
+
+    def is_game(self) -> bool:
+        return self.game
 
     def on_game_window_opened(self, size: int):
         self.socket = ClientSocket(self.encode_username())
         self.get_color()
+        self.game = True
         self.receiving_thread.start()
 
     def set_first_player(self, black: bool):

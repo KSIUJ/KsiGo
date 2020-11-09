@@ -38,5 +38,5 @@ class IClient(ABC):
         pass
 
     @abstractmethod
-    def get_passes(self) -> int:
+    def is_game(self) -> bool:
         pass

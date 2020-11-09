@@ -167,25 +167,26 @@ class GlWidget(QOpenGLWidget):
         self.board.next_turn()
 
     def mousePressEvent(self, event: QMouseEvent):
-        if self.events.is_my_turn():
-            pos = event.pos()
+        if self.events.is_game():
+            if self.events.is_my_turn():
+                pos = event.pos()
 
-            x = self.calculate_x(pos)
-            y = self.calculate_y(pos)
+                x = self.calculate_x(pos)
+                y = self.calculate_y(pos)
 
-            index_x = self.calculate_row_or_column(x)
-            index_y = self.calculate_row_or_column(y)
+                index_x = self.calculate_row_or_column(x)
+                index_y = self.calculate_row_or_column(y)
 
-            if self.board.move_is_legal(index_y, index_x):
-                self.pass_move_to_game_logic(index_x, index_y)
-                self.events.on_pawn_put(index_x, index_y)
+                if self.board.move_is_legal(index_y, index_x):
+                    self.pass_move_to_game_logic(index_x, index_y)
+                    self.events.on_pawn_put(index_x, index_y)
+                else:
+                    show_box("Error", "Invalid move.")
+
             else:
-                show_box("Error", "Invalid move.")
+                show_box("Error", "Wait for your opponent's move.")
 
-        else:
-            show_box("Error", "Wait for your opponent's move.")
-
-        self.update()
+            self.update()
 
     def get_points(self):
         return self.board.count_points()
@@ -242,11 +243,12 @@ class GameWindow(QMainWindow):
         return QMainWindow.eventFilter(self, source, event)
 
     def pass_(self):
-        if self.events.is_my_turn():
-            self.events.on_pass_clicked()
-            self.check_double_pass()
-        else:
-            show_box("Error", "Wait for your opponent's move.")
+        if self.events.is_game():
+            if self.events.is_my_turn():
+                self.events.on_pass_clicked()
+                self.check_double_pass()
+            else:
+                show_box("Error", "Wait for your opponent's move.")
 
     def check_double_pass(self):
         if self.events.check_double_pass():
@@ -260,22 +262,22 @@ class GameWindow(QMainWindow):
         self.gl_widget.board.next_turn()
 
     def resign(self):
-        box = QMessageBox()
-        box.setText("Are you sure? You won't be able to undo it.")
-        box.setWindowTitle("Resign")
-        box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
-        box.setIcon(QMessageBox.Warning)
-        box.setButtonText(QMessageBox.Ok, "Resign")
+        if self.events.is_game():
+            box = QMessageBox()
+            box.setText("Are you sure? You won't be able to undo it.")
+            box.setWindowTitle("Resign")
+            box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+            box.setIcon(QMessageBox.Warning)
+            box.setButtonText(QMessageBox.Ok, "Resign")
 
-        button = box.exec()
+            button = box.exec()
 
-        if button == QMessageBox.Ok:
-            self.close()
-            self.events.on_resign_confirmed()
-            self.events.open()
+            if button == QMessageBox.Ok:
+                self.close()
+                self.events.open()
 
     def closeEvent(self, event: PySide2.QtGui.QCloseEvent):
-        if self.events.get_passes() < 2:
+        if self.events.is_game():
             self.events.on_resign_confirmed()
         super().closeEvent(event)
 
