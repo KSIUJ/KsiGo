@@ -312,6 +312,10 @@ class GameWindow(QMainWindow):
             self.events.on_resign_confirmed()
             self.events.open()
 
+    def closeEvent(self, event: PySide2.QtGui.QCloseEvent):
+        self.events.on_resign_confirmed()
+        super().closeEvent(event)
+
 
 class EndGameDialog(QDialog):
     def __init__(self, text, game_window: QMainWindow, events: IClient):
