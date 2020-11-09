@@ -36,3 +36,7 @@ class IClient(ABC):
     @abstractmethod
     def on_game_window_opened(self, size: int):
         pass
+
+    @abstractmethod
+    def get_passes(self) -> int:
+        pass

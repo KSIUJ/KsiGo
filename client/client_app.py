@@ -56,9 +56,12 @@ class Client(IClient):
     def check_double_pass(self):
         self.my_turn = not self.my_turn
         self.passes += 1
-        if self.passes == 2:
+        if self.passes >= 2:
             return True
         return False
+
+    def get_passes(self) -> int:
+        return self.passes
 
     def on_pass_clicked(self):
         self.socket.send(self.encode_pass())
@@ -74,6 +77,7 @@ class Client(IClient):
     def on_opponent_moved(self, x: int, y: int):
         self.opponent_handler.opponent_move_signal.emit(x, y)
         self.my_turn = True
+        self.passes = 0
 
     def on_opponent_passed(self):
         self.opponent_handler.opponent_pass_signal.emit()
