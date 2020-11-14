@@ -1,36 +1,48 @@
 import argparse
-# import common.parser
-# import common.game_logic
-# import server.server_socet
+import threading
+
+import common.parser
+import common.game_logic
+import server.server_socket
+import server.interfaces.server_socket
+import server.interfaces.server
 
 
-class App:
+class Server(IServer):
 
-    def __init__(self, parser: argparse.ArgumentParser):
-        args = parser.parse_args()
+    def __init__(self, cli_parser: argparse.ArgumentParser):
+        args = cli_parser.parse_args()
         print(args)
         self.defaultPort = args.port
-        self.server_cap = args.server_cap
-        self.servers = []
+        self.player_cap = args.player_cap
+        self.readers = []
+        self.players = []
+        self.socket = IServerSocket()
 
     @classmethod
     def getAppParser(cls) -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser()
         parser.add_argument("--port", type=int, default=19995)
-        parser.add_argument("--server-cap", type=int, default=1)
+        parser.add_argument("--player-cap", type=int, default=2)
         return parser
 
     def run(self):
-        while len(self.servers) < self.server_cap:
-            new_server = Server("localhost", self.defaultPort)
-            self.servers.append(new_server)
-            new_server.connection()
-            new_server.game()
-            new_server.close_game()
+        pass
+
+    def read_handler(self, connection, message):
+        connection
+        pass
+
+    def make_connections(self, connection):
+        for conn in self.socket.listen_for_users():
+            t = threading.Thread(self.read_handler(conn))
+            self.readers.append(t)
+            t.start()
+
 
 
 def main():
-    app = App(App.getAppParser())
+    app = Server(Server.getAppParser())
     app.run()
 
 
