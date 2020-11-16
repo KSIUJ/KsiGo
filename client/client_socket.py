@@ -31,6 +31,12 @@ class Client(util.SocketCommon):
     def send_username(self):
         self.send_message(self.client_conn, self.user_name)
 
+    def send(self, msg):
+        self.send_message(self.client_conn, msg)
+
+    def receive(self):
+        return self.receive_message(self.client_conn)
+
     def game(self):
         is_game = True
         while is_game:
