@@ -106,7 +106,7 @@ class Client(IClient):
         msg = self.socket.receive()
         self.parser.execute(msg)
 
-    def other_player(self):
+    def read_server_messages(self):
         while True:
             msg = None
             msg = self.socket.receive()
