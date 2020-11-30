@@ -25,7 +25,7 @@ class Client(IClient):
         self.my_turn: bool = True
         self.socket = None
         self.game_window = None
-        self.receiving_thread = threading.Thread(target=self.other_player, daemon=True)
+        self.receiving_thread = threading.Thread(target=self.read_server_messages, daemon=True)
 
         self.opponent_handler = self.OpponentsRespondHandler()
 
