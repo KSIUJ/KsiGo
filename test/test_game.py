@@ -1,20 +1,18 @@
 import random
 import sys
-import unittest
 
 from common import game_logic
+from test import utils
 import io
 from contextlib import redirect_stdout
 
-from test import utils
 
-
-class TestPrinting(unittest.TestCase):
+class TestPrinting:
 
     # no points testing
     def test_points_counting(self):
         t1 = game_logic.Board()
-        self.assertEqual(t1.count_points(), (0, 7.5))
+        return t1.count_points(), (0, 7.5)
 
     # both players only pass since the beginning
     def test_some_passing(self):
@@ -28,8 +26,4 @@ class TestPrinting(unittest.TestCase):
             buf.getvalue()
             t1.print_board()
             output = buf.getvalue()
-        self.assertEqual(output, utils.get_empty_board())
-
-
-if __name__ == '__main__':
-    unittest.main()
+        return output, utils.get_empty_board()
