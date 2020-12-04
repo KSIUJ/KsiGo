@@ -1,17 +1,28 @@
 import struct
 
 
-def receive_message(connection):
-    message_len = struct.unpack('i', bytes(connection.recv(4).decode(), 'utf-8'))[0]
-    message = ""
+class SocketCommon:
+    def __init__(self):
+        self.host = "localhost"
+        self.port = 8888
 
-    while len(message) < message_len:
-        message += connection.recv(1024).decode()
+    def set_host_and_port(self, host, port):
+        self.host = host
+        self.port = port
 
-    return message
+    def receive_message(self, connection) -> bytes:
+        message_len = struct.unpack('i', connection.recv(4))[0]
+        message = b""
 
+        while len(message) < message_len:
+            chunk = connection.recv(1024)
+            if chunk:
+                message += chunk
 
-def send_message(connection, message):
-    parsed_message = struct.pack('i', len(message)) + bytes(message, 'utf-8')
-    print(parsed_message)
-    connection.sendall(parsed_message)
+        print(f"     received < {message_len} | {message}")
+        return message
+
+    def send_message(self, connection, message: bytes):
+        parsed_message = struct.pack('i', len(message)) + message
+        print(f"     send > {message}")
+        connection.sendall(parsed_message)

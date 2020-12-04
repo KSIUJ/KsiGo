@@ -2,53 +2,76 @@ import socket
 from common import socket_utils as util
 
 
-class Server:
-    def __init__(self, host, port):
-        self.server_conn = socket.socket()  # default values: ipv4, tcp
-        self.server_conn.bind((host, port))
-        print("Socket created")
-        self.clients = []
+class Server(util.SocketCommon):
+    def __init__(self):
+        super().__init__()
+        try:
+            self.server_conn = socket.socket()  # default values: ipv4, tcp
+        except OSError:
+            self.server_conn = None
 
-    def connection(self) -> bool:
+        self.clients = []
+        self.is_open = True
+
+        if self.bind_with_check() is False:
+            self.is_open = False
+            self.close_game()
+
+    def bind_with_check(self):
+        if self.server_conn is None:
+            return False
+
+        try:
+            self.server_conn.bind((self.host, self.port))
+            print("Socket created")
+            return True
+        except OSError:
+            print('Bind failed')
+            return False
+
+    def listen_for_users(self):
+        while len(self.clients) < 2:
+            if self.server_conn is not None:
+                conn, addr = self.server_conn.accept()
+                self.clients.append(conn)
+                b_username = self.receive_message(conn)
+                yield conn, addr, b_username
+
+                print(f"Connected with {b_username} on address {addr}")
+            else:
+                return
+
+    def create_connection(self) -> bool:
+        if self.server_conn is None:
+            return False
+
         self.server_conn.listen(2)  # buffer for two connections
         print("Waiting for connections...")
 
-        while len(self.clients) < 2:
-            client, addr = self.server_conn.accept()
-            self.clients.append(client)
-            username = util.receive_message(self.clients[-1])
-
-            print("Connected with ", username, " on address ", addr)
+        # try:
+        #     self.listen_for_users()
+        # except socket.timeout:
+        #     print("Failed to establish connection with 2 players (connection timeout)")
+        #     self.close_game()
+        #     return False
 
         return True
 
     def close_game(self):
         for user in self.clients:
-            user.send(bytes(False))
+            # user.send(bytes(False))
             user.close()
-
-    def game(self):
-        moves = []
-        is_game = True
-        player = 0
-        while is_game:
-            curr_player = self.clients[player]
-
-            curr_player.send(bytes(True))
-            moves.append(util.receive_message(curr_player))
-            print(f'Player {player} made a move: {moves[-1]}')
-
-            player += 1
-            player = player % 2
-
-            # false game ending logic
-            if len(moves) == 5:
-                is_game = False
+        if self.server_conn is not None:
+            self.server_conn.close()
+        self.is_open = False
 
 
 # function creates a server connection for two players
-def create_server(address="localhost", port=9999):
-    new_server = Server(address, port)
-    new_server.connection()
-    new_server.game()
-    new_server.close_game()
+def create_server():
+    server = Server()
+    # curr_server.set_host_and_port("localhost", 9999) # uncomment to change default values
+    if server.is_open is False:
+        return False
+    if server.create_connection():
+        # server.game()
+        server.close_game()
